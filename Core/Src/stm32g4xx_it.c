@@ -59,6 +59,7 @@ extern DMA_HandleTypeDef hdma_lpuart1_rx;
 extern DMA_HandleTypeDef hdma_lpuart1_tx;
 extern UART_HandleTypeDef hlpuart1;
 extern TIM_HandleTypeDef htim3;
+extern WWDG_HandleTypeDef hwwdg;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -200,6 +201,20 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32g4xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles Window watchdog interrupt.
+  */
+void WWDG_IRQHandler(void)
+{
+  /* USER CODE BEGIN WWDG_IRQn 0 */
+
+  /* USER CODE END WWDG_IRQn 0 */
+  HAL_WWDG_IRQHandler(&hwwdg);
+  /* USER CODE BEGIN WWDG_IRQn 1 */
+
+  /* USER CODE END WWDG_IRQn 1 */
+}
 
 /**
   * @brief This function handles DMA1 channel1 global interrupt.

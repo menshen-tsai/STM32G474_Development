@@ -49,8 +49,11 @@ DMA_HandleTypeDef hdma_lpuart1_tx;
 
 TIM_HandleTypeDef htim3;
 
+WWDG_HandleTypeDef hwwdg;
+
 /* USER CODE BEGIN PV */
 uint8_t flag;
+uint8_t wDog;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,6 +62,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_WWDG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -122,6 +126,7 @@ int main(void)
   MX_DMA_Init();
   MX_LPUART1_UART_Init();
   MX_TIM3_Init();
+  MX_WWDG_Init();
   /* USER CODE BEGIN 2 */
   setbuf(stdin, NULL);
   setbuf(stdout, NULL);
@@ -287,6 +292,36 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief WWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_WWDG_Init(void)
+{
+
+  /* USER CODE BEGIN WWDG_Init 0 */
+
+  /* USER CODE END WWDG_Init 0 */
+
+  /* USER CODE BEGIN WWDG_Init 1 */
+
+  /* USER CODE END WWDG_Init 1 */
+  hwwdg.Instance = WWDG;
+  hwwdg.Init.Prescaler = WWDG_PRESCALER_128;
+  hwwdg.Init.Window = 64;
+  hwwdg.Init.Counter = 127;
+  hwwdg.Init.EWIMode = WWDG_EWI_ENABLE;
+  if (HAL_WWDG_Init(&hwwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN WWDG_Init 2 */
+
+  /* USER CODE END WWDG_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -353,9 +388,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	static uint16_t c;
   // Check which version of the timer triggered this callback and toggle LED
-  if (htim == &htim3 )
+  if (htim->Instance == htim3.Instance )
   {
     if (c++ >= 100) {
+      wDog = 1;
 	  c = 0;
 	  flag = 1;
 	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
@@ -363,7 +399,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 }
 
+void HAL_WWDG_EarlyWakeupCallback(WWDG_HandleTypeDef *hwwdg)
+{
+	/* prevent unused argument(s) comp;ilation warning */
+	UNUSED(hwwdg);
+	if (wDog == 1)
+	{
+		wDog = 0;
+		HAL_WWDG_Refresh(hwwdg);
+		printf("Refreshing WD Timer\n\r");
+	} else
+	{
+		printf("Refreshing Failed\n\r");
 
+	}
+	__HAL_WWDG_CLEAR_FLAG(hwwdg,  0);
+}
 /* USER CODE END 4 */
 
 /**
